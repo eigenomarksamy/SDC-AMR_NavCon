@@ -1,1 +1,12 @@
-<ThreeDigitProject>_<ArchitectureVersion>_<AlgorithmVersion>_<ReleaseNumber>
+<Four Characters Project>_<Architecture Version>_<Branch Version>_<Release Number>
+
+NVCS_###_###_###
+
+NVCS -> NaVigation Controller Stack
+
+NVCS_001_001_001
+
+	- Basic architecture
+	- Configurator seperated
+	- Path is default and seperated
+	- Model, step and states are updated in drive.py
