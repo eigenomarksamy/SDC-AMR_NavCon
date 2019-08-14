@@ -1,12 +1,25 @@
-<Four Characters Project>_<Architecture Version>_<Branch Version>_<Release Number>
+<4-Character Project Name>_<3-digit Architecture Version>_<3-digit Branch Version>_<3-digit Release Number>
+----------------------------------------------------------------------------------
+Projects:
 
-NVCS_###_###_###
+NVCS_XXX_XXX_XXX
+	- NaVigation Controller Stack
+----------------------------------------------------------------------------------
+Architectures:
 
-NVCS -> NaVigation Controller Stack
+NVCS_001_XXX_XXX
+	- Basic architecture
+	- Default configurations
+----------------------------------------------------------------------------------
+Branches:
+
+NVCS_001_001_XXX
+	- master branch for releases
+----------------------------------------------------------------------------------
+Releases:
 
 NVCS_001_001_001
-
-	- Basic architecture
 	- Configurator seperated
 	- Path is default and seperated
 	- Model, step and states are updated in drive.py
+----------------------------------------------------------------------------------
