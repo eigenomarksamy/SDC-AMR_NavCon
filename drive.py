@@ -9,33 +9,14 @@ import scipy.linalg as la
 import matplotlib.pyplot as plt
 sys.path.append("Config/")
 sys.path.append("PathPlanner/")
+sys.path.append("Plant/")
 import Configuration
 import Path
+import Plant
 
 
 L = 1.5
 max_steer = math.radians(45.0)
-
-
-class State:
-
-	def __init__(self, x=0.0, y=0.0, yaw=0.0, v=0.0):
-		self.x = x
-		self.y = y
-		self.yaw = yaw
-		self.v = v
-
-
-def update(state, a, delta, dt):
-	if delta >= max_steer:
-		delta = max_steer
-	if delta <= - max_steer:
-		delta = - max_steer
-	state.x = state.x + state.v * math.cos(state.yaw) * dt
-	state.y = state.y + state.v * math.sin(state.yaw) * dt
-	state.yaw = state.yaw + state.v / L * math.tan(delta) * dt
-	state.v = state.v + a * dt
-	return state
 
 
 def pi_2_pi(angle):
@@ -68,22 +49,13 @@ def dlqr(A, B, Q, R):
 	return K, X, eigVals
 
 
-def lqr_steering_control(state, cx, cy, cyaw, ck, pe, pth_e, sp, dt):
+def lqr_steering_control(state, model, cx, cy, cyaw, ck, pe, pth_e, sp, dt):
 	ind, e = calc_nearest_index(state, cx, cy, cyaw)
 	tv = sp[ind]
 	k = ck[ind]
 	v = state.v
 	th_e = pi_2_pi(state.yaw - cyaw[ind])
-	A = np.matrix(np.zeros((5, 5)))
-	A[0, 0] = 1.0
-	A[0, 1] = dt
-	A[1, 2] = v
-	A[2, 2] = 1.0
-	A[2, 3] = dt
-	A[4, 4] = 1.0
-	B = np.matrix(np.zeros((5, 2)))
-	B[3, 0] = v / L
-	B[4, 1] = dt
+	A, B = model.model_update(v, L)
 	Q = np.matrix(np.zeros((5, 5)))
 	Q[0, 0] = 1.0
 	Q[1, 1] = 1.0
@@ -94,12 +66,7 @@ def lqr_steering_control(state, cx, cy, cyaw, ck, pe, pth_e, sp, dt):
 	R[0, 0] = 1.0
 	R[1, 1] = 1.0
 	K, _, _ = dlqr(A, B, Q, R)
-	x = np.matrix(np.zeros((5, 1)))
-	x[0, 0] = e
-	x[1, 0] = (e - pe) / dt
-	x[2, 0] = th_e
-	x[3, 0] = (th_e - pth_e) / dt
-	x[4, 0] = v - tv
+	x = model.state_update(e, pe, dt, th_e, pth_e, v, tv)
 	ustar = -K * x
 	ff = math.atan2(L * k, 1)
 	fb = pi_2_pi(ustar[0, 0])
@@ -122,11 +89,11 @@ def calc_nearest_index(state, cx, cy, cyaw):
 	return ind, mind
 
 
-def closed_loop_prediction(cx, cy, cyaw, ck, speed_profile, goal, dt, show_animation):
+def closed_loop_prediction(model, cx, cy, cyaw, ck, speed_profile, goal, dt, show_animation):
 	T = 500.0
 	goal_dis = 0.3
 	stop_speed = 0.05
-	state = State(x=-0.0, y=-0.0, yaw=0.0, v=0.0)
+	state = model.init_state(x=-0.0, y=-0.0, yaw=0.0, v=0.0)
 	time = 0.0
 	x = [state.x]
 	y = [state.y]
@@ -136,8 +103,8 @@ def closed_loop_prediction(cx, cy, cyaw, ck, speed_profile, goal, dt, show_anima
 	target_ind = calc_nearest_index(state, cx, cy, cyaw)
 	e, e_th = 0.0, 0.0
 	while T >= time:
-		dl, target_ind, e, e_th, ai = lqr_steering_control(state, cx, cy, cyaw, ck, e, e_th, speed_profile, dt)
-		state = update(state, ai, dl, dt)
+		dl, target_ind, e, e_th, ai = lqr_steering_control(state, model, cx, cy, cyaw, ck, e, e_th, speed_profile, dt)
+		state = model.input_update(state, ai, dl, dt, max_steer, L)
 		if abs(state.v) <= stop_speed:
 			target_ind += 1
 		time = time + dt
@@ -229,7 +196,11 @@ def main():
 	dt = configurations[1]
 	ax, ay, goal, cx, cy, cyaw, ck, s, target_speed = get_path()
 	sp = calc_speed_profile(cx, cy, cyaw, target_speed)
-	t, x, y, yaw, v = closed_loop_prediction(cx, cy, cyaw, ck, sp, goal, dt, show_animation)
+	state_plane = 5
+	input_plane = 2
+	output_plane = 0
+	model = Plant.set_plant(state_plane, input_plane, output_plane, dt = 0.1)
+	t, x, y, yaw, v = closed_loop_prediction(model, cx, cy, cyaw, ck, sp, goal, dt, show_animation)
 	if show_animation:
 		plot_main(ax, ay, cx, cy, cyaw, ck, s, x, y)
 

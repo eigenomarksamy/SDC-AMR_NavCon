@@ -1,0 +1,4 @@
+wheel_base 2.0
+track_width 1.5
+max_steer 0.785398
+

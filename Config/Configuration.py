@@ -12,3 +12,7 @@ def config(show_animation, dt):
 	config_obj = Configuration(show_animation, dt)
 	config_list = [config_obj.show_animation, config_obj.dt]
 	return config_list
+
+
+# def get_plant_conf():
+# 	conf_paras = open("Configuration/TextFiles/ModelConfigurationParameters.txt", "r")
