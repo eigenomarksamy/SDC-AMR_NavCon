@@ -15,6 +15,11 @@ Branches:
 
 NVCS_001_001_XXX
 	- master branch for releases
+
+NVCS_001_002_XXX
+	- vehicle modeling branch
+	- For optimizations in plant objects
+	- Hierarchy of calling of model update, state update and initialization
 ----------------------------------------------------------------------------------
 Releases:
 
@@ -22,4 +27,10 @@ NVCS_001_001_001
 	- Configurator seperated
 	- Path is default and seperated
 	- Model, step and states are updated in drive.py
+
+NVCS_001_002_001
+	- Defining the plant model seperately
+	- Add update, init functions for the model
+	- Re-define state class
+	- Re-define function calls regarding the states and the plant model
 ----------------------------------------------------------------------------------
