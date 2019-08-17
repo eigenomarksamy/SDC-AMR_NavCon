@@ -33,4 +33,8 @@ NVCS_001_002_001
 	- Add update, init functions for the model
 	- Re-define state class
 	- Re-define function calls regarding the states and the plant model
+
+NVCS_001_001_002
+	- Add configurations extractor in Configuration class
+	- Re-define getting configurations in drive.py
 ----------------------------------------------------------------------------------
