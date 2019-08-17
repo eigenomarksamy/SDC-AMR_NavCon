@@ -1,4 +1,6 @@
-wheel_base 2.0
+wheel_base 1.5
 track_width 1.5
 max_steer 0.785398
+show_animation 1
+dt 0.1
 

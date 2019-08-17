@@ -15,10 +15,6 @@ import Path
 import Plant
 
 
-L = 1.5
-max_steer = math.radians(45.0)
-
-
 def pi_2_pi(angle):
 	while (angle > math.pi):
 		angle = angle - 2.0 * math.pi
@@ -49,7 +45,7 @@ def dlqr(A, B, Q, R):
 	return K, X, eigVals
 
 
-def lqr_steering_control(state, model, cx, cy, cyaw, ck, pe, pth_e, sp, dt):
+def lqr_steering_control(state, model, cx, cy, cyaw, ck, pe, pth_e, sp, dt, L):
 	ind, e = calc_nearest_index(state, cx, cy, cyaw)
 	tv = sp[ind]
 	k = ck[ind]
@@ -89,7 +85,7 @@ def calc_nearest_index(state, cx, cy, cyaw):
 	return ind, mind
 
 
-def closed_loop_prediction(model, cx, cy, cyaw, ck, speed_profile, goal, dt, show_animation):
+def closed_loop_prediction(model, cx, cy, cyaw, ck, speed_profile, goal, dt, show_animation, L, max_steer):
 	T = 500.0
 	goal_dis = 0.3
 	stop_speed = 0.05
@@ -103,7 +99,7 @@ def closed_loop_prediction(model, cx, cy, cyaw, ck, speed_profile, goal, dt, sho
 	target_ind = calc_nearest_index(state, cx, cy, cyaw)
 	e, e_th = 0.0, 0.0
 	while T >= time:
-		dl, target_ind, e, e_th, ai = lqr_steering_control(state, model, cx, cy, cyaw, ck, e, e_th, speed_profile, dt)
+		dl, target_ind, e, e_th, ai = lqr_steering_control(state, model, cx, cy, cyaw, ck, e, e_th, speed_profile, dt, L)
 		state = model.input_update(state, ai, dl, dt, max_steer, L)
 		if abs(state.v) <= stop_speed:
 			target_ind += 1
@@ -191,7 +187,9 @@ def plot_main(ax, ay, cx, cy, cyaw, ck, s, x, y):
 
 def main():
 	print("LQR steering control tracking start!!")
-	configurations = Configuration.config(True, 0.1)
+	configurations = Configuration.config()
+	L = configurations[2]
+	max_steer = configurations[4]
 	show_animation = configurations[0]
 	dt = configurations[1]
 	ax, ay, goal, cx, cy, cyaw, ck, s, target_speed = get_path()
@@ -200,7 +198,7 @@ def main():
 	input_plane = 2
 	output_plane = 0
 	model = Plant.set_plant(state_plane, input_plane, output_plane, dt = 0.1)
-	t, x, y, yaw, v = closed_loop_prediction(model, cx, cy, cyaw, ck, sp, goal, dt, show_animation)
+	t, x, y, yaw, v = closed_loop_prediction(model, cx, cy, cyaw, ck, sp, goal, dt, show_animation, L, max_steer)
 	if show_animation:
 		plot_main(ax, ay, cx, cy, cyaw, ck, s, x, y)
 
